@@ -18,7 +18,6 @@ function WaveletTree2D(levels::Integer, size::Tuple{Integer,Integer}; D::Integer
 end
 
 
-import Base.show
 function show(io::IO, W::WaveletTree2D)
 	println(io, "Lowpass:")
 	show(io, W.lowpass)
@@ -33,7 +32,6 @@ function show(io::IO, W::WaveletTree2D)
 	end
 end
 
-import Base.size
 @doc """
 	size(WaveletTree2D)
 
@@ -87,7 +85,6 @@ function children_index(dims::Vector)
 end
 
 
-import Base.vec
 @doc """
 	vec(WaveletTree2D, level, D)
 

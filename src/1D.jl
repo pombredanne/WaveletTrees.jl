@@ -3,12 +3,6 @@ type WaveletTree1D
 	highpass::Array{Any,1}
 end
 
-# Outer construction
-#@doc """
-#	WaveletTree1D(levels, size)
-#
-#Initiate `WaveletTree1D` with `levels` levels and `size` number of lowpass coefficients.
-#"""->
 function WaveletTree1D(levels::Integer, size::Integer)
 	W = cell(levels)
 	for l = 0:levels-1
@@ -37,7 +31,7 @@ function size(W::WaveletTree1D)
 	return subband_sizes
 end
 
-
+#=
 @doc """
 	parent(WaveletTree1D, level, index)
 
@@ -66,4 +60,4 @@ function child(W::WaveletTree1D, level::Integer, index::Integer)
 
 	children_index = [2*index-1; 2*index]
 end
-
+=#
