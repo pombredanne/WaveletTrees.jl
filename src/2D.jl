@@ -5,7 +5,7 @@ end
 
 type WaveletMatrix2D
 	lowpass::Matrix
-	highpass_matrix::Array{Any,1}
+	highpass::Array{Any,1}
 end
 
 
@@ -169,8 +169,8 @@ end
 The inverse of `tree2mat`.
 """->
 function mat2tree(W::WaveletMatrix2D)
-	L = length(W.highpass_matrix)
-	D = size(W.highpass_matrix[1], 1)
+	L = length(W.highpass)
+	D = size(W.highpass[1], 1)
 
 	WW = WaveletTree2D(L, size(W.lowpass); D=D)
 	WW.lowpass = W.lowpass
@@ -180,7 +180,7 @@ function mat2tree(W::WaveletMatrix2D)
 	for l = 1:L
 		for d = 1:D
 			current_size = tuple( subband_size[l+1,:]... )
-			WW.highpass[l][d] = reshape( W.highpass_matrix[l][d,:], current_size )
+			WW.highpass[l][d] = reshape( W.highpass[l][d,:], current_size )
 		end
 	end
 

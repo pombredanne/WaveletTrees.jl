@@ -9,9 +9,11 @@ include("2D.jl")
 export # types
 	WaveletTree1D,
 	WaveletTree2D,
+	WaveletMatrix2D,
 
 	# functions
 	size,
+	levels,
 	vec,
 	children_index,
 	tree2mat,
