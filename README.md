@@ -49,5 +49,5 @@ For `WaveletTree2D` a `vec` function is available that vectorizes a single direc
 
 # Acknowledgements
 
-The layout with nested cells inspired by the [contourlet toolbox](https://www.mathworks.com/matlabcentral/fileexchange/8837-contourlet-toolbox) for Matlab.
+The layout with nested cells is inspired by the [contourlet toolbox](https://www.mathworks.com/matlabcentral/fileexchange/8837-contourlet-toolbox) for Matlab.
 

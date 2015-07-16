@@ -3,6 +3,11 @@ type WaveletTree2D
 	highpass::Array{Any,1}
 end
 
+type WaveletMatrix2D
+	lowpass::Matrix
+	highpass_matrix::Array{Any,1}
+end
+
 
 function WaveletTree2D(levels::Integer, size::Tuple{Integer,Integer}; D::Integer=3)
 	W = cell(levels)
@@ -14,7 +19,7 @@ function WaveletTree2D(levels::Integer, size::Tuple{Integer,Integer}; D::Integer
 		end
 	end
 
-	WaveletTree2D(W[1][1], W)
+	return WaveletTree2D(W[1][1], W)
 end
 
 
@@ -48,6 +53,15 @@ function size(W::WaveletTree2D)
 	end
 
 	return subband_sizes
+end
+
+@doc """
+	levels(W::WaveletTree)
+
+Return the number of levels in `W`.
+"""->
+function levels(W::WaveletTree2D)
+	return length(W.highpass)
 end
 
 
@@ -88,7 +102,7 @@ end
 @doc """
 	vec(WaveletTree2D, level, D)
 
-Return the coefficients on level `level` and direction `D` in `WaveletTree2D` 
+Return the highpass coefficients on level `level` and direction `D` in `WaveletTree2D` 
 as a vector sorted by affiliation to the parent node.
 For a 4-by-4 subband the order is
 
@@ -112,5 +126,64 @@ function vec(W::WaveletTree2D, level::Integer, D::Integer)
 	cindex = children_index(dims)
 
 	return W.highpass[level][D][ cindex ]
+end
+
+
+@doc """
+	tree2mat(W::WaveletTree2D)
+
+The `D` directional subbands on every level of `W` each with `N` coefficients is collected in a `D-by-N` matrix.
+
+The ordering is such that the children of coefficient `n` on level `l` are `4n-3`, `4n-2`, `4n-1` and `4n` on level `l+1`.
+"""->
+function tree2mat(W::WaveletTree2D)
+	L = levels(W)
+	D = length(W.highpass[1])
+
+	matrices = cell(L)
+	subband_size = size(W)
+	numberof_wavelets = prod(subband_size, 2)
+
+	for l = 1:L
+		matrices[l] = Array(Float64, D, numberof_wavelets[l+1])
+		current_size = tuple( subband_size[l,:]... )
+
+		if l == 1
+			index = [1:numberof_wavelets[2];]
+		else
+			index = children_index( vec(subband_size[l,:]) )
+		end
+
+		for d = 1:D
+			matrices[l][d,:] = W.highpass[l][d][index]
+		end
+	end
+
+	return WaveletMatrix2D( W.lowpass, matrices )
+end
+
+
+@doc """
+	mat2tree(W::WaveletMatrix2D)
+
+The inverse of `tree2mat`.
+"""->
+function mat2tree(W::WaveletMatrix2D)
+	L = length(W.highpass_matrix)
+	D = size(W.highpass_matrix[1], 1)
+
+	WW = WaveletTree2D(L, size(W.lowpass); D=D)
+	WW.lowpass = W.lowpass
+
+	subband_size = size(WW)
+
+	for l = 1:L
+		for d = 1:D
+			current_size = tuple( subband_size[l+1,:]... )
+			WW.highpass[l][d] = reshape( W.highpass_matrix[l][d,:], current_size )
+		end
+	end
+
+	return WW
 end
 

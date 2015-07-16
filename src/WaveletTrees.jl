@@ -12,6 +12,9 @@ export # types
 
 	# functions
 	size,
-	vec
+	vec,
+	children_index,
+	tree2mat,
+	mat2tree
 
 end # module
