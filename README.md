@@ -42,7 +42,11 @@ A cell of `L` cells.
 Each inner cell contains `D` matrices with coefficients from the directional subbands.
 
 
-For both type of `WaveletTree` a `size` function is available that returns the number of coefficients in all subbands as either a vector or an `levels-by-2` matrix.
+The type `WaveletTree` is used as an alias for the union of `WaveletTree1D` and `WaveletTree2D`. 
+For `WaveletTree`s there are the functions
+
+- `size`: Returns the number of coefficients in all subbands as either a vector or an `levels-by-2` matrix.
+- `levels`: The number of levels.
 
 For `WaveletTree2D` a `vec` function is available that vectorizes a single directional subband according to the order induced by the parents `ρ`.
 
