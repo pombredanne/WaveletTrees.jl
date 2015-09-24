@@ -23,20 +23,6 @@ function WaveletTree2D(levels::Integer, size::Tuple{Integer,Integer}; D::Integer
 end
 
 
-function show(io::IO, W::WaveletTree2D)
-	println(io, "Lowpass:")
-	show(io, W.lowpass)
-	print(io, "\n\n")
-
-	numberof_levels = length(W.highpass)
-	for level = 1:numberof_levels
-		str = string("Highpass level ", level, ":")
-		println(io, str)
-		show(io, W.highpass[level])
-		print(io, "\n\n")
-	end
-end
-
 @doc """
 	size(WaveletTree2D)
 
@@ -53,15 +39,6 @@ function size(W::WaveletTree2D)
 	end
 
 	return subband_sizes
-end
-
-@doc """
-	levels(W::WaveletTree)
-
-Return the number of levels in `W`.
-"""->
-function levels(W::WaveletTree2D)
-	return length(W.highpass)
 end
 
 
@@ -112,9 +89,9 @@ For a 4-by-4 subband the order is
 	6 8 14 16
 """->
 function vec(W::WaveletTree2D, level::Integer, D::Integer)
-	numberof_levels = length( W.highpass )
-	if level < 1 || level > numberof_levels
-		error("Level must be between 1 and ", numberof_subbands)
+	L = levels(W)
+	if level < 1 || level > L
+		error("Level must be between 1 and ", L)
 	end
 
 	if level == 1
@@ -132,7 +109,7 @@ end
 @doc """
 	tree2mat(W::WaveletTree2D)
 
-The `D` directional subbands on every level of `W` each with `N` coefficients is collected in a `D-by-N` matrix.
+The `D` directional subbands on every level of `W` each with `N` coefficients are collected in a `D-by-N` matrix.
 
 The ordering is such that the children of coefficient `n` on level `l` are `4n-3`, `4n-2`, `4n-1` and `4n` on level `l+1`.
 """->
