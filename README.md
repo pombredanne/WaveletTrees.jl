@@ -16,7 +16,7 @@ For 2D signals the highpass subbands *within each direction* are arranged in a q
 # Usage
 
 The two types available are `WaveletTree1D` and `WaveletTree2D`.
-A `WaveletTree1D` with `L` levels and a lowpass subband (coarsest highpass) subband with `size` coefficients are constructed with
+A `WaveletTree1D` with `L` levels and a lowpass/coarsest highpass subband with `size` coefficients are constructed with
 
 	W = WaveletTree1D(L, size)
 

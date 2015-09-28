@@ -14,18 +14,37 @@ end
 
 
 @doc """
-	size(WaveletTree1D)
+	size(WaveletTree1D; S::Char)
 
 A vector with the size of each subband.
+`S` indicates the subbands requested and can be one of
+
+- `L`: Only low pass.
+- `H`: Only high pass.
+- `A` (default): Both low and high pass, in that order.
 """->
-function size(W::WaveletTree1D)
-	highpass_count = length(W.highpass)
-	subband_sizes = Array(Integer, highpass_count + 1)
+function size(W::WaveletTree1D, S::Char='A')
+	if S == 'L'
+		return size(W, Val{'L'})
+	elseif S == 'H'
+		return size(W, Val{'H'})
+	elseif S == 'A'
+		return [ size(W, Val{'L'}); size(W, Val{'H'}) ]
+	else
+		error("Wrong subband requested")
+	end
+end
 
-	subband_sizes[1] = length(W.lowpass)
+function size(W::WaveletTree1D, ::Type{Val{'L'}})
+	length(W.lowpass)
+end
 
-	for level = 1:highpass_count
-		subband_sizes[level+1] = length(W.highpass[level])
+function size(W::WaveletTree1D, ::Type{Val{'H'}})
+	L = length(W.highpass)
+	subband_sizes = Array(Integer, L)
+
+	for l = 1:L
+		subband_sizes[l] = length( W.highpass[l] )
 	end
 
 	return subband_sizes
