@@ -17,7 +17,7 @@ export # types
 	size,
 	levels,
 	vec,
-	children_index,
+	cindex,
 	tree2mat,
 	mat2tree
 

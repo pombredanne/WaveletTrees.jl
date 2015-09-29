@@ -42,7 +42,7 @@ function size(W::WaveletTree2D)
 end
 
 
-function children_index(dims::Vector)
+function cindex(dims::Vector)
 	#=
 	The children of a coefficient are in the 2-by-2 block in the same
 	position at one level higher. That is, the children of
@@ -62,8 +62,8 @@ function children_index(dims::Vector)
 	6 8 14 16
 	=#
 
-	numberof_parents = prod(dims)
-	parent_indices = reshape( [1:numberof_parents;], dims[1], dims[2] )
+	N_parents = prod(dims)
+	parent_indices = reshape( [1:N_parents;], dims[1], dims[2] )
 
 	all_ones = ones(Integer,2,2)
 	children_parent_relation = kron( parent_indices, all_ones )
@@ -90,9 +90,7 @@ For a 4-by-4 subband the order is
 """->
 function vec(W::WaveletTree2D, level::Integer, D::Integer)
 	L = levels(W)
-	if level < 1 || level > L
-		error("Level must be between 1 and ", L)
-	end
+	@assert 1 <= level <= L 
 
 	if level == 1
 		return vec( W.highpass[1][D] )
@@ -100,7 +98,7 @@ function vec(W::WaveletTree2D, level::Integer, D::Integer)
 
 	sizes = size(W)
 	dims = vec( sizes[level,:] )
-	cindex = children_index(dims)
+	cindex = cindex(dims)
 
 	return W.highpass[level][D][ cindex ]
 end
@@ -119,16 +117,16 @@ function tree2mat(W::WaveletTree2D)
 
 	matrices = cell(L)
 	subband_size = size(W)
-	numberof_wavelets = prod(subband_size, 2)
+	N_wave = prod(subband_size, 2)
 
 	for l = 1:L
-		matrices[l] = Array(Float64, D, numberof_wavelets[l+1])
+		matrices[l] = Array(Float64, D, N_wave[l+1])
 		current_size = tuple( subband_size[l,:]... )
 
 		if l == 1
-			index = [1:numberof_wavelets[2];]
+			index = [1:N_wave[2];]
 		else
-			index = children_index( vec(subband_size[l,:]) )
+			index = cindex( vec(subband_size[l,:]) )
 		end
 
 		for d = 1:D
