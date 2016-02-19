@@ -1,4 +1,12 @@
-typealias WaveletTree Union{WaveletTree1D, WaveletTree2D}
+@doc """
+	WaveletTree{D}
+
+Wavelet tree for `D` dimensional data.
+"""->
+type WaveletTree{D}
+	lowpass::Array{Float64,D}
+	highpass::Array{Any,1}
+end
 
 function show(io::IO, W::WaveletTree)
 	println(io, "Lowpass:")

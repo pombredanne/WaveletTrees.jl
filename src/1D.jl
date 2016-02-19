@@ -1,20 +1,20 @@
-type WaveletTree1D
-	lowpass::Vector
-	highpass::Array{Any,1}
-end
+@doc """
+	WaveletTree(levels::Integer, size::Integer) -> WaveletTree{1}
 
-function WaveletTree1D(levels::Integer, size::Integer)
+Initialize a 1D wavelet tree with `levels` levels and the coarsest level with `size` coefficients.
+"""->
+function WaveletTree(levels::Integer, size::Integer)
 	W = cell(levels)
 	for l = 0:levels-1
 		W[l+1] = Array(Float64, size*2^l)
 	end
 
-	WaveletTree1D(W[1], W)
+	WaveletTree{1}(W[1], W)
 end
 
 
 @doc """
-	size(WaveletTree1D; S::Char)
+	size(WaveletTree{1}; S::Char)
 
 A vector with the size of each subband.
 `S` indicates the subbands requested and can be one of
@@ -23,7 +23,7 @@ A vector with the size of each subband.
 - `H`: Only high pass.
 - `A` (default): Both low and high pass, in that order.
 """->
-function size(W::WaveletTree1D, S::Char='A')
+function size(W::WaveletTree{1}, S::Char='A')
 	if S == 'L'
 		return size(W, Val{'L'})
 	elseif S == 'H'
@@ -35,11 +35,11 @@ function size(W::WaveletTree1D, S::Char='A')
 	end
 end
 
-function size(W::WaveletTree1D, ::Type{Val{'L'}})
+function size(W::WaveletTree{1}, ::Type{Val{'L'}})
 	length(W.lowpass)
 end
 
-function size(W::WaveletTree1D, ::Type{Val{'H'}})
+function size(W::WaveletTree{1}, ::Type{Val{'H'}})
 	L = length(W.highpass)
 	subband_sizes = Array(Integer, L)
 
