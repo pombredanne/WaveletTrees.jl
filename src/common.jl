@@ -32,3 +32,25 @@ function levels(W::WaveletTree)
 	return length(W.highpass)
 end
 
+@doc """
+	size(WaveletTree, S::Char)
+
+A vector with the size of each subband.
+`S` indicates the subbands requested and can be one of
+
+- `L`: Only low pass.
+- `H`: Only high pass.
+- `A` (default): Both low and high pass, in that order.
+"""->
+function size(W::WaveletTree, S::Char='A')
+	if S == 'L'
+		return size(W, Val{'L'})
+	elseif S == 'H'
+		return size(W, Val{'H'})
+	elseif S == 'A'
+		return [ size(W, Val{'L'})'; size(W, Val{'H'}) ]
+	else
+		error("Wrong subband requested")
+	end
+end
+

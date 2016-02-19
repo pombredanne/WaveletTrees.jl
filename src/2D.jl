@@ -33,20 +33,16 @@ function WaveletTree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3
 end
 
 
-# TODO: L, H and A like for 1D
-@doc """
-	size(WaveletTree)
+function size(W::WaveletTree{2}, ::Type{Val{'L'}})
+	[size(W.lowpass)...]
+end
 
-A vector with the size of each subband.
-"""->
-function size(W::WaveletTree{2})
+function size(W::WaveletTree{2}, ::Type{Val{'H'}})
 	highpass_count = length(W.highpass)
-	subband_sizes = Array(Integer, highpass_count + 1, 2)
-
-	subband_sizes[1,:] = [size(W.lowpass)...]
+	subband_sizes = Array(Integer, highpass_count, 2)
 
 	for level = 1:highpass_count
-		subband_sizes[level+1,:] = [size( W.highpass[level][1] )...]
+		subband_sizes[level,:] = [size( W.highpass[level][1] )...]
 	end
 
 	return subband_sizes
