@@ -10,13 +10,13 @@ type WaveletMatrix
 end
 
 @doc """
-	WaveletTree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3)
+	wavelettree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3)
 
 Initialize a 2D WaveletTree with `levels` levels and the coarsest level as a matrix of size `size`.
 Each highpass level has `D` subbands.
 
 """->
-function WaveletTree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3)
+function wavelettree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3)
 	@assert 1 <= levels
 	@assert 1 <= D
 

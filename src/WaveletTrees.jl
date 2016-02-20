@@ -13,6 +13,7 @@ export
 	WaveletMatrix,
 
 	# functions
+	wavelettree,
 	size,
 	levels,
 	vec,

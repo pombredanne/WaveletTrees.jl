@@ -1,9 +1,11 @@
 @doc """
-	WaveletTree(levels::Integer, size::Integer) -> WaveletTree{1}
+	wavelettree(levels::Integer, size::Integer) -> WaveletTree{1}
 
 Initialize a 1D wavelet tree with `levels` levels and the coarsest level with `size` coefficients.
 """->
-function WaveletTree(levels::Integer, size::Integer)
+function wavelettree(levels::Integer, size::Integer)
+	@assert levels >= 1 "There must be at least one level in the tree"
+
 	W = cell(levels)
 	for l = 0:levels-1
 		W[l+1] = Array(Float64, size*2^l)
