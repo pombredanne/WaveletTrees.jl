@@ -17,6 +17,7 @@ export
 	size,
 	levels,
 	vec,
+	dirs,
 	cindex,
 	tree2mat,
 	mat2tree

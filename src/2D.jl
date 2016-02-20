@@ -1,9 +1,3 @@
-# TODO: Update doc
-@doc """
-	WaveletMatrix
-
-A `WaveletTree{2}` where each subband is represented as a matrix; see ... 
-"""->
 type WaveletMatrix
 	lowpass::Matrix
 	highpass::Array{Any,1}
@@ -17,8 +11,11 @@ Each highpass level has `D` subbands.
 
 """->
 function wavelettree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3)
-	@assert 1 <= levels
-	@assert 1 <= D
+	@assert levels >= 1 "There must be at least one level in the tree"
+	@assert D >= 1 "There must be at least one direction"
+	if D == 1
+		warning("Are you sure you want a *2D* tree for 1D data?")
+	end
 
 	W = cell(levels)
 
@@ -32,6 +29,18 @@ function wavelettree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3
 	return WaveletTree(W[1][1], W)
 end
 
+@doc """
+	dirs(W::WaveletTree{D}) -> Int
+
+The number of directions in the highpass subbands.
+"""->
+function dirs{D}(W::WaveletTree{D})
+	if D == 1
+		return 1
+	else
+		return length(W.highpass[1])
+	end
+end
 
 function size(W::WaveletTree{2}, ::Type{Val{'L'}})
 	[size(W.lowpass)...]
@@ -156,7 +165,7 @@ function mat2tree(W::WaveletMatrix)
 	L = length(W.highpass)
 	D = size(W.highpass[1], 1)
 
-	WW = WaveletTree(L, size(W.lowpass), D)
+	WW = wavelettree(L, size(W.lowpass), D)
 	WW.lowpass = W.lowpass
 
 	subband_size = size(WW)

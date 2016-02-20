@@ -19,3 +19,5 @@ S = size(T1)
 
 @test levels(T1) == Nlevels
 
+@test dirs(T1) == 1
+
