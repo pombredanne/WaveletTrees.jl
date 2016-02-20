@@ -1,15 +1,25 @@
-type WaveletTree2D
+# TODO: Update doc
+@doc """
+	WaveletMatrix
+
+A `WaveletTree{2}` where each subband is represented as a matrix; see ... 
+"""->
+type WaveletMatrix
 	lowpass::Matrix
 	highpass::Array{Any,1}
 end
 
-type WaveletMatrix2D
-	lowpass::Matrix
-	highpass::Array{Any,1}
-end
+@doc """
+	WaveletTree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3)
 
+Initialize a 2D WaveletTree with `levels` levels and the coarsest level as a matrix of size `size`.
+Each highpass level has `D` subbands.
 
-function WaveletTree2D(levels::Integer, size::Tuple{Integer,Integer}; D::Integer=3)
+"""->
+function WaveletTree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3)
+	@assert 1 <= levels
+	@assert 1 <= D
+
 	W = cell(levels)
 
 	for level = 0:levels-1
@@ -19,49 +29,52 @@ function WaveletTree2D(levels::Integer, size::Tuple{Integer,Integer}; D::Integer
 		end
 	end
 
-	return WaveletTree2D(W[1][1], W)
+	return WaveletTree(W[1][1], W)
 end
 
 
-@doc """
-	size(WaveletTree2D)
+function size(W::WaveletTree{2}, ::Type{Val{'L'}})
+	[size(W.lowpass)...]
+end
 
-A vector with the size of each subband.
-"""->
-function size(W::WaveletTree2D)
+function size(W::WaveletTree{2}, ::Type{Val{'H'}})
 	highpass_count = length(W.highpass)
-	subband_sizes = Array(Integer, highpass_count + 1, 2)
-
-	subband_sizes[1,:] = [size(W.lowpass)...]
+	subband_sizes = Array(Integer, highpass_count, 2)
 
 	for level = 1:highpass_count
-		subband_sizes[level+1,:] = [size( W.highpass[level][1] )...]
+		subband_sizes[level,:] = [size( W.highpass[level][1] )...]
 	end
 
 	return subband_sizes
 end
 
+@doc """
+	cindex(dims::Tuple) -> Matrix
 
-function cindex(dims::Vector)
-	#=
-	The children of a coefficient are in the 2-by-2 block in the same
-	position at one level higher. That is, the children of
+The *indices* of the children of a subband of size `dims`.
+
+The children of a coefficient are the 2-by-2 block in the same position at one level finer. 
+That is, the children of
+
 	1 3 
 	2 4
-	are
+
+are
+
 	1 1 3 3
 	1 1 3 3
 	2 2 4 4 
 	2 2 4 4 
 
-	Within each block the coefficients are ordered column-wise.
-	The coefficients are extracted by creating the index matrix
+Within each block the coefficients are ordered column-wise.
+Thus, the output of `cindex((2,2))` is
+
 	1 3  9 11
 	2 4 10 12
 	5 7 13 15
 	6 8 14 16
-	=#
-
+"""->
+function cindex(dims::Tuple{Integer,Integer})
 	N_parents = prod(dims)
 	parent_indices = reshape( [1:N_parents;], dims[1], dims[2] )
 
@@ -77,10 +90,9 @@ end
 
 
 @doc """
-	vec(WaveletTree2D, level, D)
+	vec(WaveletTree, level, D)
 
-Return the highpass coefficients on level `level` and direction `D` in `WaveletTree2D` 
-as a vector sorted by affiliation to the parent node.
+Return the highpass coefficients on level `level` and direction `D` in a 2D `WaveletTree` as a vector sorted by affiliation to the parent node.
 For a 4-by-4 subband the order is
 
 	1 3  9 11
@@ -88,30 +100,28 @@ For a 4-by-4 subband the order is
 	5 7 13 15
 	6 8 14 16
 """->
-function vec(W::WaveletTree2D, level::Integer, D::Integer)
-	L = levels(W)
-	@assert 1 <= level <= L 
+function vec(W::WaveletTree{2}, level::Integer, D::Integer)
+	@assert 1 <= level <= levels(W)
 
 	if level == 1
 		return vec( W.highpass[1][D] )
 	end
 
 	sizes = size(W)
-	dims = vec( sizes[level,:] )
-	cindex = cindex(dims)
+	dims = ( sizes[level,:]... )
+	children = cindex(dims)
 
-	return W.highpass[level][D][ cindex ]
+	return W.highpass[level][D][ children ]
 end
 
-
 @doc """
-	tree2mat(W::WaveletTree2D)
+	tree2mat(W::WaveletTree)
 
 The `D` directional subbands on every level of `W` each with `N` coefficients are collected in a `D-by-N` matrix.
 
 The ordering is such that the children of coefficient `n` on level `l` are `4n-3`, `4n-2`, `4n-1` and `4n` on level `l+1`.
 """->
-function tree2mat(W::WaveletTree2D)
+function tree2mat(W::WaveletTree{2})
 	L = levels(W)
 	D = length(W.highpass[1])
 
@@ -124,9 +134,9 @@ function tree2mat(W::WaveletTree2D)
 		current_size = tuple( subband_size[l,:]... )
 
 		if l == 1
-			index = [1:N_wave[2];]
+			index = 1:N_wave[2]
 		else
-			index = cindex( vec(subband_size[l,:]) )
+			index = cindex( (subband_size[l,:]...) )
 		end
 
 		for d = 1:D
@@ -134,20 +144,19 @@ function tree2mat(W::WaveletTree2D)
 		end
 	end
 
-	return WaveletMatrix2D( W.lowpass, matrices )
+	return WaveletMatrix( W.lowpass, matrices )
 end
 
-
 @doc """
-	mat2tree(W::WaveletMatrix2D)
+	mat2tree(W::WaveletMatrix)
 
 The inverse of `tree2mat`.
 """->
-function mat2tree(W::WaveletMatrix2D)
+function mat2tree(W::WaveletMatrix)
 	L = length(W.highpass)
 	D = size(W.highpass[1], 1)
 
-	WW = WaveletTree2D(L, size(W.lowpass); D=D)
+	WW = WaveletTree(L, size(W.lowpass), D)
 	WW.lowpass = W.lowpass
 
 	subband_size = size(WW)

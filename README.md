@@ -8,47 +8,57 @@ A `WaveletTree` consists of a lowpass subband and (multiple) highpass subband(s)
 For 1D signals the coefficients in the highpass subbands are arranged in a binary tree, i.e., a directed acyclic graph where each node has either zero or two children.
 A binary tree with three levels are seen below.
 
-![A binary wavelet](tree.png)
+![A binary wavelet tree](tree.png)
 
 For 2D signals the highpass subbands *within each direction* are arranged in a quad tree, i.e., a tree where each node have either zero or four children.
 
 
-# Usage
+# Types
 
-The two types available are `WaveletTree1D` and `WaveletTree2D`.
-A `WaveletTree1D` with `L` levels and a lowpass/coarsest highpass subband with `size` coefficients are constructed with
+The generic type available is `WaveletTree{D}`, where `D` denotes the dimension of the data prior to the wavelet transform and can be 1 or 2.
+A `WaveletTree` has entries `lowpass` and `highpass` whose types depend on `D`.
 
-	W = WaveletTree1D(L, size)
+A 1D `WaveletTree` with `L` levels and a lowpass/coarsest highpass subband with `size` coefficients are constructed with
 
-The returned object has
+```julia
+WaveletTree(L, size)
+```
 
-- `W.lowpass`: 
-vector with lowpass coefficients.
-- `W.highpass`: 
-A cell of `L` vectors with coefficients from each level.
+and its entries are
+
+- `lowpass`: 
+A vector with `size` lowpass coefficients.
+- `highpass`: 
+A cell of `L` vectors with coefficients from each level, where `W.highpass[1]` is of length `size`.
 
 
-A `WaveletTree2D` with `L` levels, `D` directional subbands within each level and a lowpass subband (coarsest highpass) subband with `x-by-y` coefficients are constructed with
+A 2D `WaveletTree` with `L` levels, `D` directional subbands within each level and a lowpass subband (coarsest highpass) subband with `x-by-y` coefficients are constructed with
 
-	WaveletTree2D(L, size; D=3)
+```julia
+WaveletTree2D(L, (x,y), D)
+```
 
-where `size` is the tuple `(x,y)`.
-The returned object has
+(with default value `D = 3`) and its entries are
 
-- `W.lowpass`: 
-A matrix with lowpass coefficients.
-- `W.highpass`: 
+- `lowpass`: 
+A matrix with `x-by-y` lowpass coefficients.
+- `highpass`: 
 A cell of `L` cells.
-Each inner cell contains `D` matrices with coefficients from the directional subbands.
+Each inner cell contains `D` matrices with coefficients from the directional subbands, where the matrices in `W.highpass[1]` are all `x-by-y` matrices.
 
 
-The type `WaveletTree` is used as an alias for the union of `WaveletTree1D` and `WaveletTree2D`. 
+# Functions
+
 For `WaveletTree`s there are the functions
 
-- `size`: Returns the number of coefficients in all subbands as either a vector or an `levels-by-2` matrix.
-- `levels`: The number of levels.
+- `size`: Returns the number of coefficients in the lowpass subband, highpass subband or the two combined (which is the default). 
+The result is either a vector or an `levels-by-2` matrix, depending on the dimension of `WaveletTree`.
+- `levels`: The number of levels in the tree.
 
-For `WaveletTree2D` a `vec` function is available that vectorizes a single directional subband according to the order induced by the parents `ρ`.
+For 2D `WaveletTree`s there is furthermore 
+
+- `vec`: Vectorizes a single directional subband according to the order induced by the parents `ρ`.
+- `tree2mat`: The directional subbands on the same level are collected into one matrix.
 
 
 # Acknowledgements

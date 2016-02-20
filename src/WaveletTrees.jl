@@ -2,16 +2,15 @@ module WaveletTrees
 
 import Base: show, size, vec
 
+include("common.jl")
 include("1D.jl")
 include("2D.jl")
-include("common.jl")
 
 # package code goes here
-export # types
-	WaveletTree1D,
-	WaveletTree2D,
+export 
+	# types
 	WaveletTree,
-	WaveletMatrix2D,
+	WaveletMatrix,
 
 	# functions
 	size,
