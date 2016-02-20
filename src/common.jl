@@ -50,7 +50,7 @@ function size(W::WaveletTree, S::Char='A')
 	elseif S == 'A'
 		return [ size(W, Val{'L'})'; size(W, Val{'H'}) ]
 	else
-		error("Wrong subband requested")
+		throw(ArgumentError("Wrong subband requested"))
 	end
 end
 
