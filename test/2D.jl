@@ -17,11 +17,13 @@ S = size(T2)
 @test S[3,:] == 2*S[2,:]
 
 @test levels(T2) == Nlevels
-
 @test dirs(T2) == 3
 
-#= M = tree2mat(T2) =#
-#= @test T2 == mat2tree(M) =#
 @test T2 == mat2tree(tree2mat(T2))
 
 # TODO: vec and cindex
+# Test vec(torize)
+children = kron( [1 3;2 4], ones(Integer,2,2) )
+index = cindex( (2,2) )
+expected = repmat( [1:4;]', 4, 1 )
+@test children[index] == expected
