@@ -54,7 +54,7 @@ function size(W::WaveletTree, S::Char='A')
 	end
 end
 
-function Base.(:(==)){D}(W1::WaveletTree{D}, W2::WaveletTree{D})
+function (==){D}(W1::WaveletTree{D}, W2::WaveletTree{D})
 	W1.lowpass == W2.lowpass && W1.highpass == W2.highpass
 end
 

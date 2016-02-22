@@ -1,6 +1,6 @@
 module WaveletTrees
 
-import Base: show, size, vec
+import Base: show, size, vec, ==, isapprox
 
 include("common.jl")
 include("1D.jl")

@@ -94,7 +94,20 @@ function cindex(dims::Tuple{Integer,Integer})
 	one_through_four = [1 3 ; 2 4]
 	replicate_one_through_four = repmat( one_through_four, dims[1], dims[2] )
 
-	cindex = offset + replicate_one_through_four
+	return offset + replicate_one_through_four
+end
+
+@doc """
+	subband_index(dims) -> Matrix
+
+The indices in a subband of dimension `dims` ordered by parent affiliation.
+Effectively `cindex(parent dimensions)`.
+"""->
+function subband_index(dims::Tuple{Integer,Integer})
+	@assert iseven(dims[1]) && iseven(dims[2]) "Both dimensions must be even"
+
+	parent_dims = tuple( div(dims[1],2), div(dims[2],2) )
+	return cindex(parent_dims)
 end
 
 
@@ -132,18 +145,17 @@ The ordering is such that the children of coefficient `n` on level `l` are `4n-3
 """->
 function tree2mat(W::WaveletTree{2})
 	L = levels(W)
-	D = length(W.highpass[1])
+	D = dirs(W)
 
 	matrices = cell(L)
 	subband_size = size(W)
-	N_wave = prod(subband_size, 2)
+	Nwave = prod(subband_size, 2)
 
 	for l = 1:L
-		matrices[l] = Array(Float64, D, N_wave[l+1])
-		current_size = tuple( subband_size[l,:]... )
+		matrices[l] = Array(Float64, D, Nwave[l+1])
 
 		if l == 1
-			index = 1:N_wave[2]
+			index = 1:Nwave[2]
 		else
 			index = cindex( (subband_size[l,:]...) )
 		end
@@ -161,22 +173,23 @@ end
 
 The inverse of `tree2mat`.
 """->
-function mat2tree(W::WaveletMatrix)
-	L = length(W.highpass)
-	D = size(W.highpass[1], 1)
+function mat2tree(M::WaveletMatrix)
+	#= L = levels(M) =#
+	#= D = dirs(M) =#
+	L = length(M.highpass)
+	D = size(M.highpass[1],1)
 
-	WW = wavelettree(L, size(W.lowpass), D)
-	WW.lowpass = W.lowpass
+	W = wavelettree(L, size(M.lowpass), D)
+	W.lowpass = M.lowpass
 
-	subband_size = size(WW)
+	subband_size = size(W, 'H')
+	Nwave = prod(subband_size, 2)
 
-	for l = 1:L
-		for d = 1:D
-			current_size = tuple( subband_size[l+1,:]... )
-			WW.highpass[l][d] = reshape( W.highpass[l][d,:], current_size )
-		end
+	for l = 1:L, d = 1:D
+		index = subband_index( tuple(subband_size[l,:]...) )
+		W.highpass[l][d][index] = M.highpass[l][d,:]
 	end
 
-	return WW
+	return W
 end
 

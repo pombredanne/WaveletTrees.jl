@@ -19,9 +19,13 @@ S = size(T2)
 @test levels(T2) == Nlevels
 @test dirs(T2) == 3
 
+# Is mat2tree an inverse of tree2mat?
+T2.lowpass = rand( size(T2.lowpass) )
+for l = 1:Nlevels, d = 1:3
+	T2.highpass[l][d] = rand( size(T2.highpass[l][d]) )
+end
 @test T2 == mat2tree(tree2mat(T2))
 
-# TODO: vec and cindex
 # Test vec(torize)
 children = kron( [1 3;2 4], ones(Integer,2,2) )
 index = cindex( (2,2) )
