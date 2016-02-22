@@ -50,7 +50,11 @@ function size(W::WaveletTree, S::Char='A')
 	elseif S == 'A'
 		return [ size(W, Val{'L'})'; size(W, Val{'H'}) ]
 	else
-		error("Wrong subband requested")
+		throw(ArgumentError("Wrong subband requested"))
 	end
+end
+
+function (==){D}(W1::WaveletTree{D}, W2::WaveletTree{D})
+	W1.lowpass == W2.lowpass && W1.highpass == W2.highpass
 end
 

@@ -1,9 +1,3 @@
-# TODO: Update doc
-@doc """
-	WaveletMatrix
-
-A `WaveletTree{2}` where each subband is represented as a matrix; see ... 
-"""->
 type WaveletMatrix
 	lowpass::Matrix
 	highpass::Array{Any,1}
@@ -17,8 +11,11 @@ Each highpass level has `D` subbands.
 
 """->
 function wavelettree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3)
-	@assert 1 <= levels
-	@assert 1 <= D
+	@assert levels >= 1 "There must be at least one level in the tree"
+	@assert D >= 1 "There must be at least one direction"
+	if D == 1
+		warning("Are you sure you want a *2D* tree for 1D data?")
+	end
 
 	W = cell(levels)
 
@@ -32,6 +29,18 @@ function wavelettree(levels::Integer, size::Tuple{Integer,Integer}, D::Integer=3
 	return WaveletTree(W[1][1], W)
 end
 
+@doc """
+	dirs(W::WaveletTree{D}) -> Int
+
+The number of directions in the highpass subbands.
+"""->
+function dirs{D}(W::WaveletTree{D})
+	if D == 1
+		return 1
+	else
+		return length(W.highpass[1])
+	end
+end
 
 function size(W::WaveletTree{2}, ::Type{Val{'L'}})
 	[size(W.lowpass)...]
@@ -85,7 +94,20 @@ function cindex(dims::Tuple{Integer,Integer})
 	one_through_four = [1 3 ; 2 4]
 	replicate_one_through_four = repmat( one_through_four, dims[1], dims[2] )
 
-	cindex = offset + replicate_one_through_four
+	return offset + replicate_one_through_four
+end
+
+@doc """
+	subband_index(dims) -> Matrix
+
+The indices in a subband of dimension `dims` ordered by parent affiliation.
+Effectively `cindex(parent dimensions)`.
+"""->
+function subband_index(dims::Tuple{Integer,Integer})
+	@assert iseven(dims[1]) && iseven(dims[2]) "Both dimensions must be even"
+
+	parent_dims = tuple( div(dims[1],2), div(dims[2],2) )
+	return cindex(parent_dims)
 end
 
 
@@ -123,18 +145,17 @@ The ordering is such that the children of coefficient `n` on level `l` are `4n-3
 """->
 function tree2mat(W::WaveletTree{2})
 	L = levels(W)
-	D = length(W.highpass[1])
+	D = dirs(W)
 
 	matrices = cell(L)
 	subband_size = size(W)
-	N_wave = prod(subband_size, 2)
+	Nwave = prod(subband_size, 2)
 
 	for l = 1:L
-		matrices[l] = Array(Float64, D, N_wave[l+1])
-		current_size = tuple( subband_size[l,:]... )
+		matrices[l] = Array(Float64, D, Nwave[l+1])
 
 		if l == 1
-			index = 1:N_wave[2]
+			index = 1:Nwave[2]
 		else
 			index = cindex( (subband_size[l,:]...) )
 		end
@@ -152,22 +173,23 @@ end
 
 The inverse of `tree2mat`.
 """->
-function mat2tree(W::WaveletMatrix)
-	L = length(W.highpass)
-	D = size(W.highpass[1], 1)
+function mat2tree(M::WaveletMatrix)
+	#= L = levels(M) =#
+	#= D = dirs(M) =#
+	L = length(M.highpass)
+	D = size(M.highpass[1],1)
 
-	WW = WaveletTree(L, size(W.lowpass), D)
-	WW.lowpass = W.lowpass
+	W = wavelettree(L, size(M.lowpass), D)
+	W.lowpass = M.lowpass
 
-	subband_size = size(WW)
+	subband_size = size(W, 'H')
+	Nwave = prod(subband_size, 2)
 
-	for l = 1:L
-		for d = 1:D
-			current_size = tuple( subband_size[l+1,:]... )
-			WW.highpass[l][d] = reshape( W.highpass[l][d,:], current_size )
-		end
+	for l = 1:L, d = 1:D
+		index = subband_index( tuple(subband_size[l,:]...) )
+		W.highpass[l][d][index] = M.highpass[l][d,:]
 	end
 
-	return WW
+	return W
 end
 
