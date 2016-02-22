@@ -3,11 +3,10 @@ os:
   - linux
   - osx
 julia:
-  - release
-  - nightly
+  - 0.4
 notifications:
   email: false
-# uncomment the following lines to override the default test script
-#script:
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.build("WaveletTrees"); Pkg.test("WaveletTrees"; coverage=true)'
+script:
+  - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.build("WaveletTrees"); Pkg.test("WaveletTrees"; coverage=true)'
+after_success:
+   - julia -e 'cd(Pkg.dir("WaveletTrees")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
