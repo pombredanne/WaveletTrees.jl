@@ -1,6 +1,7 @@
 # WaveletTrees
 
 [![Build Status](https://travis-ci.org/robertdj/WaveletTrees.jl.svg?branch=master)](https://travis-ci.org/robertdj/WaveletTrees.jl)
+[![codecov.io](https://codecov.io/github/robertdj/WaveletTrees.jl/coverage.svg?branch=master)](https://codecov.io/github/robertdj/WaveletTrees.jl?branch=master)
 
 This package contains data types I use for modelling wavelet trees.
 A `WaveletTree` consists of a lowpass subband and (multiple) highpass subband(s); the highpass subband(s) are arranged in a tree structure.
